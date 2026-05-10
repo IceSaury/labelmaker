@@ -9,8 +9,11 @@
   "scripts": {
     "dev:backend": "npm run dev --workspace=apps/backend",
     "dev:frontend": "npm run dev --workspace=apps/frontend",
+    "build": "npm run build:frontend && npm run build:backend",
     "build:backend": "npm run build --workspace=apps/backend",
     "build:frontend": "npm run build --workspace=apps/frontend",
+    "start": "npm run start --workspace=apps/backend",
+    "postinstall": "npm run db:generate",
     "db:migrate": "npm run db:migrate --workspace=apps/backend",
     "db:generate": "npm run db:generate --workspace=apps/backend",
     "db:seed": "npm run db:seed --workspace=apps/backend"
