@@ -1,4 +1,4 @@
 {
-  "build": "npm run build:backend",
-  "start": "npm run db:migrate && npm start"
+  "build": "npm run build",
+  "start": "npm start"
 }
