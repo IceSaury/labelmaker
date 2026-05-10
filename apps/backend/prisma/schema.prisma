@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("operator")
+  createdAt    DateTime @default(now())
+  items        Item[]
+}
+
+model Item {
+  id              String   @id @default(cuid())
+  uniqueCode      String   @unique
+  type            String
+
+  nameCn          String
+  nameEn          String
+  nameAr          String?
+
+  weightGross     Float?
+  weightNet       Float?
+  length          Float?
+  width           Float?
+  height          Float?
+
+  parentId        String?
+  parent          Item?            @relation("ItemParts", fields: [parentId], references: [id])
+  parts           Item[]           @relation("ItemParts")
+  partDescription String?
+
+  isContainer       Boolean          @default(false)
+  containerItems    ContainerItem[]  @relation("ContainerItemContainer")
+  containedIn       ContainerItem[]  @relation("ContainerItemItem")
+
+  createdBy       String
+  creator         User             @relation(fields: [createdBy], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model ContainerItem {
+  id          String @id @default(cuid())
+  containerId String
+  container   Item   @relation("ContainerItemContainer", fields: [containerId], references: [id])
+  itemId      String
+  item        Item   @relation("ContainerItemItem", fields: [itemId], references: [id])
+  quantity    Int    @default(1)
+
+  @@unique([containerId, itemId])
+}
+
+model Sequence {
+  id      String @id
+  year    Int
+  type    String
+  current Int
+
+  @@unique([year, type])
+}
