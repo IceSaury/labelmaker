@@ -1,4 +1,4 @@
 {
   "build": "npm run build",
-cd apps/backend && npx prisma migrate deploy && npx tsx src/seed.ts && node dist/index.js
+  "start": "cd apps/backend && npx prisma migrate deploy && node dist/index.js"
 }
