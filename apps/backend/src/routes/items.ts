@@ -82,6 +82,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     where: { id: req.params.id },
     include: {
       parts: true,
+      parent: true,
       containerItems: { include: { item: true } },
       containedIn: { include: { container: true } },
     },

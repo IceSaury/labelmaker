@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { getTranslator } from '../services/translator';
+import { translateText } from '../services/translator';
 
 const router = Router();
 router.use(authMiddleware);
@@ -22,8 +22,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   const { text, sourceLang, targetLang } = parsed.data;
 
   try {
-    const translator = getTranslator();
-    const translated = await translator.translate(text, sourceLang, targetLang);
+    const translated = await translateText(text, sourceLang, targetLang);
     res.json({ translated });
   } catch {
     res.status(500).json({ error: 'Translation failed' });

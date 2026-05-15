@@ -18,7 +18,8 @@ export default function ItemList() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewItems, setPreviewItems] = useState<Item[] | null>(null);
-  const [previewParentName, setPreviewParentName] = useState<string | undefined>();
+  const [previewParentNameCn, setPreviewParentNameCn] = useState<string | undefined>();
+  const [previewParentNameEn, setPreviewParentNameEn] = useState<string | undefined>();
 
   const loadItems = useCallback((p?: number) => {
     const pageNum = p ?? 1;
@@ -77,7 +78,12 @@ export default function ItemList() {
         const doc = (
           <Document>
             <Page size={[425.20, 283.46]}>
-              <LabelTemplate item={item} qrDataURL={qrDataURL} />
+              <LabelTemplate
+                item={item}
+                qrDataURL={qrDataURL}
+                parentNameCn={item.parent?.nameCn}
+                parentNameEn={item.parent?.nameEn}
+              />
             </Page>
           </Document>
         );
@@ -131,23 +137,27 @@ export default function ItemList() {
 
   const handlePrint = (item: Item) => {
     setPreviewItems([item]);
-    setPreviewParentName(undefined);
+    setPreviewParentNameCn(undefined);
+    setPreviewParentNameEn(undefined);
   };
 
-  const handlePrintPart = (part: Item, parentName: string) => {
+  const handlePrintPart = (part: Item, parentNameCn: string, parentNameEn: string) => {
     setPreviewItems([part]);
-    setPreviewParentName(parentName);
+    setPreviewParentNameCn(parentNameCn);
+    setPreviewParentNameEn(parentNameEn);
   };
 
   const handlePrintAllParts = (item: Item) => {
     if (!item.parts || item.parts.length === 0) return;
     setPreviewItems([item, ...item.parts]);
-    setPreviewParentName(item.nameCn);
+    setPreviewParentNameCn(item.nameCn);
+    setPreviewParentNameEn(item.nameEn);
   };
 
   const handleClosePreview = () => {
     setPreviewItems(null);
-    setPreviewParentName(undefined);
+    setPreviewParentNameCn(undefined);
+    setPreviewParentNameEn(undefined);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -220,7 +230,8 @@ export default function ItemList() {
           open={previewItems.length > 0}
           onClose={handleClosePreview}
           mode="label"
-          parentName={previewParentName}
+          parentNameCn={previewParentNameCn}
+          parentNameEn={previewParentNameEn}
         />
       )}
 

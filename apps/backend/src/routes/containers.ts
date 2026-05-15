@@ -156,10 +156,11 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Fetch the actual item details for each container item
+  // Fetch the actual item details for each container item, including parent
   const itemIds = container.containerItems.map((ci) => ci.itemId);
   const items = await prisma.item.findMany({
     where: { id: { in: itemIds } },
+    include: { parent: true },
   });
 
   const itemsMap = Object.fromEntries(items.map((i) => [i.id, i]));
