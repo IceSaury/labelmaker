@@ -13,7 +13,8 @@ interface ContainerEntry {
 }
 
 export default function ContainerForm() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
   const navigate = useNavigate();
   const { id } = useParams();
   const [form] = Form.useForm();
@@ -95,7 +96,7 @@ export default function ContainerForm() {
       </Typography.Title>
 
       <Form form={form} layout="vertical" onFinish={onFinish} style={{ maxWidth: 1000 }}>
-        <Form.Item name="nameCn" label={t('container.name')} rules={[{ required: true }]}>
+        <Form.Item name="nameCn" label={t('container.name')} rules={isZh ? [{ required: true }] : []}>
           <Input placeholder={t('item.nameCn')} />
         </Form.Item>
         <Form.Item name="nameEn" label={t('item.nameEn')} rules={[{ required: true }]}>

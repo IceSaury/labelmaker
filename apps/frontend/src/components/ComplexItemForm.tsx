@@ -5,8 +5,9 @@ import PartsList from './PartsList';
 import api from '../api/client';
 
 export default function ComplexItemForm() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const form = Form.useFormInstance();
+  const isZh = i18n.language.startsWith('zh');
 
   const handleTranslate = async () => {
     const nameCn = form.getFieldValue('nameCn');

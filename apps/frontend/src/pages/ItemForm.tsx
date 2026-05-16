@@ -27,7 +27,22 @@ export default function ItemForm() {
   useEffect(() => {
     if (isEdit && currentItem) {
       setType(currentItem.type);
-      form.setFieldsValue(currentItem);
+      const { id: _id, uniqueCode, createdAt, updatedAt, createdBy, parentId, parent, isContainer, containerItems, containedIn, type: _type, parts: rawParts, ...rest } = currentItem as Record<string, unknown>;
+      const values: Record<string, unknown> = { ...rest, type: currentItem.type };
+      if (Array.isArray(rawParts)) {
+        values.parts = (rawParts as Record<string, unknown>[]).map((p) => ({
+          nameCn: p.nameCn,
+          nameEn: p.nameEn,
+          nameAr: p.nameAr,
+          partDescription: p.partDescription,
+          weightGross: p.weightGross,
+          weightNet: p.weightNet,
+          length: p.length,
+          width: p.width,
+          height: p.height,
+        }));
+      }
+      form.setFieldsValue(values);
     }
   }, [currentItem, isEdit, form]);
 
@@ -40,6 +55,12 @@ export default function ItemForm() {
         Object.entries({ ...rawValues }).filter(([, v]) => v != null),
       );
       data.type = type;
+      // Strip null values from nested parts too
+      if (Array.isArray(data.parts)) {
+        data.parts = (data.parts as Record<string, unknown>[]).map((p) =>
+          Object.fromEntries(Object.entries(p).filter(([, v]) => v != null)),
+        );
+      }
       if (isEdit && id) {
         await updateItem(id, data);
       } else {

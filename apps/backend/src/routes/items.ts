@@ -1,15 +1,14 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { generateUniqueCode, generatePartCodes } from '../services/idGenerator';
+import prisma from '../lib/prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 const createItemSchema = z.object({
   type: z.enum(['simple', 'complex', 'container']),
-  nameCn: z.string().min(1),
+  nameCn: z.string().optional(),
   nameEn: z.string().min(1),
   nameAr: z.string().optional(),
   weightGross: z.number().positive().optional(),
@@ -30,7 +29,21 @@ const createItemSchema = z.object({
   })).optional(),
 });
 
-const updateItemSchema = createItemSchema.partial();
+const stripNulls = (val: unknown): unknown => {
+  if (val === null || val === undefined) return val;
+  if (Array.isArray(val)) return val.map(stripNulls);
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>;
+    const cleaned: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== null) cleaned[k] = stripNulls(v);
+    }
+    return cleaned;
+  }
+  return val;
+};
+
+const updateItemSchema = z.preprocess(stripNulls, createItemSchema.partial());
 
 // GET /api/items - list all items with search/filter
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -130,7 +143,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     data: {
       uniqueCode: mainCode,
       type: data.type,
-      nameCn: data.nameCn,
+      nameCn: data.nameCn || '',
       nameEn: data.nameEn,
       nameAr: data.nameAr,
       weightGross: data.weightGross,
@@ -194,7 +207,55 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     } as Record<string, unknown>,
   });
 
-  res.json(item);
+  // Handle parts for complex items: replace all parts
+  if (item.type === 'complex' && Array.isArray(parts)) {
+    // Get old part IDs to clean up container assignments
+    const oldParts = await prisma.item.findMany({
+      where: { parentId: item.id },
+      select: { id: true },
+    });
+    const oldPartIds = oldParts.map((p) => p.id);
+
+    // Remove old parts from any containers
+    if (oldPartIds.length > 0) {
+      await prisma.containerItem.deleteMany({ where: { itemId: { in: oldPartIds } } });
+    }
+
+    // Delete old parts
+    await prisma.item.deleteMany({ where: { parentId: item.id } });
+
+    // Create new parts
+    if (parts.length > 0) {
+      const partCodes = await generatePartCodes(parts.length);
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i] as Record<string, unknown>;
+        await prisma.item.create({
+          data: {
+            uniqueCode: partCodes[i],
+            type: 'simple',
+            nameCn: String(p.nameCn || ''),
+            nameEn: String(p.nameEn || ''),
+            nameAr: p.nameAr ? String(p.nameAr) : null,
+            partDescription: p.partDescription ? String(p.partDescription) : null,
+            weightGross: p.weightGross ? Number(p.weightGross) : null,
+            weightNet: p.weightNet ? Number(p.weightNet) : null,
+            length: p.length ? Number(p.length) : null,
+            width: p.width ? Number(p.width) : null,
+            height: p.height ? Number(p.height) : null,
+            parentId: item.id,
+            createdBy: req.userId!,
+          },
+        });
+      }
+    }
+  }
+
+  const full = await prisma.item.findUnique({
+    where: { id: item.id },
+    include: { parts: true },
+  });
+
+  res.json(full);
 });
 
 // DELETE /api/items/:id
