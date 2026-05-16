@@ -27,7 +27,7 @@ export default function ItemForm() {
   useEffect(() => {
     if (isEdit && currentItem) {
       setType(currentItem.type);
-      const { id: _id, uniqueCode, createdAt, updatedAt, createdBy, parentId, parent, isContainer, containerItems, containedIn, type: _type, parts: rawParts, ...rest } = currentItem as Record<string, unknown>;
+      const { id: _id, uniqueCode, createdAt, updatedAt, createdBy, parentId, parent, isContainer, containerItems, containedIn, type: _type, parts: rawParts, ...rest } = currentItem as unknown as Record<string, unknown>;
       const values: Record<string, unknown> = { ...rest, type: currentItem.type };
       if (Array.isArray(rawParts)) {
         values.parts = (rawParts as Record<string, unknown>[]).map((p) => ({
