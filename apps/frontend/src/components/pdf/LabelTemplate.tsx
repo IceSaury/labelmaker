@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
   },
   specs: {
     marginBottom: 6,
-    gap: 4,
   },
   specItem: {
     fontSize: 13,
@@ -89,10 +88,13 @@ interface Props {
   item: Item;
   qrDataURL: string;
   consignee?: string;
-  parentName?: string;
+  parentNameCn?: string;
+  parentNameEn?: string;
 }
 
-export default function LabelTemplate({ item, qrDataURL, consignee, parentName }: Props) {
+export default function LabelTemplate({ item, qrDataURL, consignee, parentNameCn, parentNameEn }: Props) {
+  const isPart = !!parentNameCn;
+
   return (
     <View style={styles.page}>
       {/* Header: code + QR */}
@@ -105,13 +107,24 @@ export default function LabelTemplate({ item, qrDataURL, consignee, parentName }
 
       {/* Names */}
       <View style={styles.names}>
-        <Text style={styles.nameCn}>{item.nameCn}</Text>
-        <Text style={styles.nameEn}>{item.nameEn}</Text>
-        {item.nameAr && <Text style={styles.nameAr}>{item.nameAr}</Text>}
-        {item.partDescription && (
-          <Text style={styles.partLabel}>
-            {parentName ? `${parentName} - ${item.partDescription}` : `Part: ${item.partDescription}`}
-          </Text>
+        {isPart ? (
+          <>
+            <Text style={styles.nameCn}>{parentNameCn}</Text>
+            {parentNameEn && <Text style={styles.nameEn}>{parentNameEn}</Text>}
+            <View style={{ flexDirection: 'row', marginTop: 4 }}>
+              <Text style={{ ...styles.partLabel, marginRight: 8 }}>{item.nameCn}</Text>
+              <Text style={styles.partLabel}>{item.nameEn}</Text>
+              {item.partDescription && (
+                <Text style={{ ...styles.partLabel, marginLeft: 8 }}>{item.partDescription}</Text>
+              )}
+            </View>
+          </>
+        ) : (
+          <>
+            <Text style={styles.nameCn}>{item.nameCn}</Text>
+            <Text style={styles.nameEn}>{item.nameEn}</Text>
+            {item.nameAr && <Text style={styles.nameAr}>{item.nameAr}</Text>}
+          </>
         )}
       </View>
 

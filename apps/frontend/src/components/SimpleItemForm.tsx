@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 
 export default function SimpleItemForm() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const form = Form.useFormInstance();
+  const isZh = i18n.language.startsWith('zh');
 
   const handleTranslate = async () => {
     const nameCn = form.getFieldValue('nameCn');
@@ -26,7 +27,7 @@ export default function SimpleItemForm() {
     <>
       <Row gutter={16}>
         <Col span={8}>
-          <Form.Item name="nameCn" label={t('item.nameCn')} rules={[{ required: true }]}>
+          <Form.Item name="nameCn" label={t('item.nameCn')} rules={isZh ? [{ required: true }] : []}>
             <Input suffix={<Button type="text" size="small" icon={<TranslationOutlined />} onClick={handleTranslate} title={t('item.translate')} />} />
           </Form.Item>
         </Col>

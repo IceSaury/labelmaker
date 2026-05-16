@@ -1,10 +1,9 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import prisma from '../lib/prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.use(authMiddleware);
 
@@ -156,10 +155,11 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Fetch the actual item details for each container item
+  // Fetch the actual item details for each container item, including parent
   const itemIds = container.containerItems.map((ci) => ci.itemId);
   const items = await prisma.item.findMany({
     where: { id: { in: itemIds } },
+    include: { parent: true },
   });
 
   const itemsMap = Object.fromEntries(items.map((i) => [i.id, i]));

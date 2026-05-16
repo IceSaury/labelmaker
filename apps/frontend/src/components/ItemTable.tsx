@@ -18,13 +18,13 @@ interface Props {
   loading: boolean;
   onDelete: (id: string) => void;
   onPrint: (item: Item) => void;
-  onPrintPart: (part: Item, parentName: string) => void;
+  onPrintPart: (part: Item, parentNameCn: string, parentNameEn: string) => void;
   onPrintAllParts: (item: Item) => void;
   selectedIds: string[];
   onSelectChange: (ids: string[]) => void;
 }
 
-function PartSubTable({ parts, parentName, onPrintPart }: { parts: Item[]; parentName: string; onPrintPart: (part: Item, parentName: string) => void }) {
+function PartSubTable({ parts, parentNameCn, parentNameEn, onPrintPart, selectedIds, onSelectChange }: { parts: Item[]; parentNameCn: string; parentNameEn: string; onPrintPart: (part: Item, parentNameCn: string, parentNameEn: string) => void; selectedIds: string[]; onSelectChange: (ids: string[]) => void }) {
   const { t } = useTranslation();
   const partColumns = [
     { title: t('item.uniqueCode'), dataIndex: 'uniqueCode', key: 'code', width: 150 },
@@ -53,11 +53,13 @@ function PartSubTable({ parts, parentName, onPrintPart }: { parts: Item[]; paren
         <Button
           size="small"
           icon={<PrinterOutlined />}
-          onClick={() => onPrintPart(r, parentName)}
+          onClick={() => onPrintPart(r, parentNameCn, parentNameEn)}
         />
       ),
     },
   ];
+
+  const partIds = new Set(parts.map((p) => p.id));
 
   return (
     <Table
@@ -66,6 +68,13 @@ function PartSubTable({ parts, parentName, onPrintPart }: { parts: Item[]; paren
       rowKey="id"
       pagination={false}
       size="small"
+      rowSelection={{
+        selectedRowKeys: selectedIds.filter((id) => partIds.has(id)),
+        onChange: (keys) => {
+          const otherIds = selectedIds.filter((id) => !partIds.has(id));
+          onSelectChange([...otherIds, ...(keys as string[])]);
+        },
+      }}
     />
   );
 }
@@ -163,15 +172,22 @@ export default function ItemTable({
       <Table
         rowSelection={{
           selectedRowKeys: selectedIds,
-          onChange: (keys) => onSelectChange(keys as string[]),
+          onChange: (keys) => {
+            const mainItemIds = new Set(items.map((i) => i.id));
+            const partSelections = selectedIds.filter((id) => !mainItemIds.has(id));
+            onSelectChange([...(keys as string[]), ...partSelections]);
+          },
         }}
         expandable={{
           rowExpandable: (record) => record.type === 'complex' && (record.parts?.length ?? 0) > 0,
           expandedRowRender: (record) => (
             <PartSubTable
               parts={record.parts!}
-              parentName={record.nameCn}
+              parentNameCn={record.nameCn}
+              parentNameEn={record.nameEn}
               onPrintPart={onPrintPart}
+              selectedIds={selectedIds}
+              onSelectChange={onSelectChange}
             />
           ),
           defaultExpandAllRows: false,

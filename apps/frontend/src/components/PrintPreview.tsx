@@ -14,10 +14,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   mode: 'label' | 'packing';
-  parentName?: string;
+  parentNameCn?: string;
+  parentNameEn?: string;
 }
 
-export default function PrintPreview({ items, open, onClose, mode, parentName }: Props) {
+export default function PrintPreview({ items, open, onClose, mode, parentNameCn, parentNameEn }: Props) {
   const { t } = useTranslation();
   const [qrDataURLs, setQrDataURLs] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -76,7 +77,8 @@ export default function PrintPreview({ items, open, onClose, mode, parentName }:
                 <LabelTemplate
                   item={it}
                   qrDataURL={qrDataURLs.get(it.id) ?? ''}
-                  parentName={it.parentId ? parentName : undefined}
+                  parentNameCn={it.parentId ? parentNameCn : undefined}
+                  parentNameEn={it.parentId ? parentNameEn : undefined}
                 />
               </Page>
             ))}
@@ -103,7 +105,8 @@ export default function PrintPreview({ items, open, onClose, mode, parentName }:
                 <LabelTemplate
                   item={it}
                   qrDataURL={qrDataURLs.get(it.id) ?? ''}
-                  parentName={it.parentId ? parentName : undefined}
+                  parentNameCn={it.parentId ? parentNameCn : undefined}
+                  parentNameEn={it.parentId ? parentNameEn : undefined}
                 />
               </Page>
             ))}
@@ -128,7 +131,8 @@ export default function PrintPreview({ items, open, onClose, mode, parentName }:
             <LabelTemplate
               item={it}
               qrDataURL={qrDataURLs.get(it.id) ?? ''}
-              parentName={it.parentId ? parentName : undefined}
+              parentNameCn={it.parentId ? parentNameCn : undefined}
+              parentNameEn={it.parentId ? parentNameEn : undefined}
             />
           </Page>
         ))}
